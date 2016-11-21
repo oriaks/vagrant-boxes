@@ -106,8 +106,8 @@
         "scripts/ssh.sh",
         "scripts/systemd.sh",
         "scripts/users.sh",
-        "scripts/minimize.sh",
-        "scripts/cleanup.sh"
+        "scripts/cleanup.sh",
+        "scripts/minimize.sh"
       ],
       "pause_before": "5s"
     }
