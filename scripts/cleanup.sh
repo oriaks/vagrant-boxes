@@ -11,6 +11,9 @@ fi
 # Red Hat specific
 if which yum; then
   package-cleanup -y --oldkernels --count=1
+  if [ `yum list installed | grep kernel.$(uname -p) | wc -l` -gt 1 ]; then
+    rpm -e "kernel-$(uname -r)"
+  fi
   yum clean -y all
   rm -rf /tmp/rubygems-* /var/cache/yum/*
 fi
