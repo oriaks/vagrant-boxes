@@ -12,10 +12,22 @@ endif
 all: $(TEMPLATES)
 
 $(TEMPLATES):
+	$(eval ISO_SOURCE=$(shell awk -F '"' '/"_iso_url"/ {print $$4; exit}' '${CURDIR}/packer-templates/$@.json'))
+	$(eval ISO_TARGET=$(shell awk -F '"' '/"iso_url"/ {print $$4; exit}' '${CURDIR}/packer-templates/$@.json'))
+	@if [ -n "${ISO_SOURCE}" -a ! -f "${ISO_TARGET}" ]; then \
+	  case `echo ${ISO_SOURCE} | awk -F '.' '{print $$NF}'` in \
+	    bz2 ) \
+	      curl -fLsS "${ISO_SOURCE}" | bunzip2 -c > "${ISO_TARGET}" \
+	      ;; \
+	    gz ) \
+	      curl -fLsS "${ISO_SOURCE}" | gunzip -c > "${ISO_TARGET}" \
+	      ;; \
+	  esac \
+	fi
 	packer build ${ARGS} packer-templates/$@.json
 
-mostlyclean:
-	rm -f vagrant-boxes/*
+clean:
+	rm -f ${CURDIR}/vagrant-boxes/*
 
-clean: mostlyclean
-	rm -f packer-cache/*
+distclean: clean
+	rm -f ${CURDIR}/packer-cache/*
