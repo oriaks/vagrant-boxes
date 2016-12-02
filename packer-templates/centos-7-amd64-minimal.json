@@ -79,6 +79,7 @@
         "scripts/network.sh",
         "scripts/ssh.sh",
         "scripts/systemd.sh",
+        "scripts/timezone.sh",
         "scripts/users.sh",
         "scripts/cleanup.sh",
         "scripts/minimize.sh"
