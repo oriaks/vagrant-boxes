@@ -1,0 +1,101 @@
+{
+  "variables": {
+    "iso_checksum": "b4da8ffa10945e4d95478edb32f7a3dd9691f9a6c6d7820b1ffa346f6eb6a878",
+    "iso_checksum_type": "sha256",
+    "iso_url": "http://clearos.bhs.mirrors.ovh.net/clearos/7/iso/x86_64/ClearOS-DVD-x86_64-7.2.0.iso",
+    "ssh_password": "vagrant",
+    "ssh_username": "vagrant",
+    "vm_name": "clearos-7-amd64"
+  },
+  "builders": [
+    {
+      "type": "qemu",
+      "accelerator": "kvm",
+      "boot_command": [
+        "<tab><wait>",
+        "biosdevname=0 <wait>",
+        "ks=http://{{.HTTPIP}}:{{.HTTPPort}}/{{.Name}}.cfg <wait>",
+        "net.ifnames=0 <wait>",
+        "text <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "communicator": "ssh",
+      "disk_size": "8192",
+      "headless": false,
+      "http_directory": "preseed",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "qemuargs": [
+        [ "-smp", "2" ],
+        [ "-m", "1024M" ]
+      ],
+      "shutdown_command": "sudo /sbin/halt -p",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_port": "22",
+      "ssh_pty" : "true",
+      "ssh_wait_timeout": "2h",
+      "vm_name": "{{user `vm_name`}}"
+    },
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<tab><wait>",
+        "biosdevname=0 <wait>",
+        "ks=http://{{.HTTPIP}}:{{.HTTPPort}}/{{.Name}}.cfg <wait>",
+        "net.ifnames=0 <wait>",
+        "text <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "communicator": "ssh",
+      "disk_size": "8192",
+      "guest_additions_mode": "disable",
+      "guest_os_type": "RedHat_64",
+      "hard_drive_interface": "sata",
+      "headless": false,
+      "http_directory": "preseed",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "shutdown_command": "sudo /sbin/halt -p",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_port": "22",
+      "ssh_pty" : "true",
+      "ssh_wait_timeout": "2h",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--cpus", "2"],
+        ["modifyvm", "{{.Name}}", "--memory", "1024"]
+      ],
+      "vm_name": "{{user `vm_name`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo '{{user `ssh_password`}}' | sudo -S sh '{{.Path}}'",
+      "scripts": [
+        "scripts/upgrade.sh",
+        "scripts/grub.sh",
+        "scripts/network.sh",
+        "scripts/ssh.sh",
+        "scripts/systemd.sh",
+        "scripts/timezone.sh",
+        "scripts/users.sh",
+        "scripts/minimize.sh",
+        "scripts/cleanup.sh"
+      ],
+      "pause_before": "5s"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "vagrant-boxes/{{user `vm_name`}}-{{.Provider}}.box",
+      "vagrantfile_template": "vagrant/vagrantfile-linux.tpl"
+    }
+  ]
+}
