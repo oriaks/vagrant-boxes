@@ -1,0 +1,98 @@
+{
+  "variables": {
+    "img_url": "http://downloads.openwrt.org/chaos_calmer/15.05.1/x86/64/openwrt-15.05.1-x86-64-combined-ext4.img.gz",
+    "iso_checksum": "8d6bcc8b3937accfb0b77b9006230475",
+    "iso_checksum_type": "md5",
+    "iso_url": "http://downloads.sourceforge.net/project/systemrescuecd/sysresccd-x86/4.9.0/systemrescuecd-x86-4.9.0.iso",
+    "ssh_password": "vagrant",
+    "ssh_username": "root",
+    "vm_name": "openwrt-15.05-amd64"
+  },
+  "builders": [
+    {
+      "type": "qemu",
+      "accelerator": "kvm",
+      "boot_command": [
+        "<esc><wait>",
+        "rescue64 <wait>",
+        "biosdevname=0 <wait>",
+        "initrd=initram.igz <wait>",
+        "net.ifnames=0 <wait>",
+        "rootpass=vagrant <wait>",
+        "setkmap=us <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "communicator": "ssh",
+      "disk_size": "8192",
+      "headless": false,
+      "http_directory": "preseed",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "qemuargs": [
+        [ "-smp", "2" ],
+        [ "-m", "1024M" ]
+      ],
+      "shutdown_command": "/sbin/halt -p",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_port": "22",
+      "ssh_pty" : "true",
+      "ssh_wait_timeout": "2h",
+      "vm_name": "{{user `vm_name`}}"
+    },
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<esc><wait>",
+        "rescue64 <wait>",
+        "biosdevname=0 <wait>",
+        "initrd=initram.igz <wait>",
+        "net.ifnames=0 <wait>",
+        "rootpass=vagrant <wait>",
+        "setkmap=us <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "communicator": "ssh",
+      "disk_size": "8192",
+      "guest_additions_mode": "disable",
+      "guest_os_type": "Linux_64",
+      "hard_drive_interface": "sata",
+      "headless": false,
+      "http_directory": "preseed",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "shutdown_command": "/sbin/halt -p",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_port": "22",
+      "ssh_pty" : "true",
+      "ssh_wait_timeout": "2h",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--cpus", "2"],
+        ["modifyvm", "{{.Name}}", "--memory", "1024"]
+      ],
+      "vm_name": "{{user `vm_name`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "sh '{{.Path}}'",
+      "scripts": [
+        "scripts/openwrt.sh"
+      ],
+      "pause_before": "5s"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "vagrant-boxes/{{user `vm_name`}}-{{.Provider}}.box",
+      "vagrantfile_template": "vagrant/vagrantfile-openwrt.tpl"
+    }
+  ]
+}
