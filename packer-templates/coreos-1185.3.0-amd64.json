@@ -72,7 +72,6 @@
       "scripts": [
         "scripts/upgrade.sh",
         "scripts/grub.sh",
-        "scripts/network.sh",
         "scripts/ssh.sh",
         "scripts/systemd.sh",
         "scripts/timezone.sh",

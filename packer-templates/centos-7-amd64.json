@@ -13,8 +13,10 @@
       "accelerator": "kvm",
       "boot_command": [
         "<tab><wait>",
-        "text <wait>",
+        "biosdevname=0 <wait>",
         "ks=http://{{.HTTPIP}}:{{.HTTPPort}}/{{.Name}}.cfg <wait>",
+        "net.ifnames=0 <wait>",
+        "text <wait>",
         "<enter><wait>"
       ],
       "boot_wait": "10s",
@@ -41,8 +43,10 @@
       "type": "virtualbox-iso",
       "boot_command": [
         "<tab><wait>",
-        "text <wait>",
+        "biosdevname=0 <wait>",
         "ks=http://{{.HTTPIP}}:{{.HTTPPort}}/{{.Name}}.cfg <wait>",
+        "net.ifnames=0 <wait>",
+        "text <wait>",
         "<enter><wait>"
       ],
       "boot_wait": "10s",
@@ -76,7 +80,6 @@
       "scripts": [
         "scripts/upgrade.sh",
         "scripts/grub.sh",
-        "scripts/network.sh",
         "scripts/ssh.sh",
         "scripts/systemd.sh",
         "scripts/timezone.sh",
