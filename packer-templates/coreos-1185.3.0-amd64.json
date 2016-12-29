@@ -71,7 +71,7 @@
       "execute_command": "sudo -S sh '{{.Path}}'",
       "scripts": [
         "scripts/upgrade.sh",
-        "scripts/grub.sh",
+        "scripts/bootloader.sh",
         "scripts/ssh.sh",
         "scripts/systemd.sh",
         "scripts/timezone.sh",

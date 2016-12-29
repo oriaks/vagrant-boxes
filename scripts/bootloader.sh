@@ -14,16 +14,16 @@ if [ -f /etc/default/grub ]; then
 	s|^GRUB_CMDLINE_LINUX=.*|GRUB_CMDLINE_LINUX="biosdevname=0 console=tty1 console=ttyS0 net.ifnames=0 no_timer_check"|;
 	s|^GRUB_CMDLINE_LINUX_DEFAULT=.*|GRUB_CMDLINE_LINUX_DEFAULT="biosdevname=0 console=tty1 console=ttyS0 net.ifnames=0 no_timer_check"|;
 EOF
-fi
 
-# Debian specific
-if which update-grub; then
-  update-grub
-fi
+  # Debian specific
+  if which update-grub; then
+    update-grub
+  fi
 
-# Red Hat specific
-if which grub2-mkconfig; then
-  grub2-mkconfig -o /boot/grub2/grub.cfg
+  # Red Hat specific
+  if which grub2-mkconfig; then
+    grub2-mkconfig -o /boot/grub2/grub.cfg
+  fi
 fi
 
 exit 0
