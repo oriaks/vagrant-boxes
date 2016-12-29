@@ -1,3 +1,7 @@
+*.app.tar.gz
+*.img
+*.iso
+*.qcow2
 output-*/
 packer-cache/
 vagrant-boxes/
