@@ -1,0 +1,69 @@
+#!/bin/sh
+
+MACOS_VERSION=`sw_vers -productVersion`
+ROOTDIR="$3"
+
+USER_GID='20'
+USER_GUID=`uuidgen`
+USER_NAME='vagrant'
+USER_PASSWORD='vagrant'
+USER_REALNAME='Vagrant'
+USER_UID='501'
+
+USER_CRYPTED_PASSWORD=`perl -e "print crypt('${USER_PASSWORD}', 'sa');"`
+
+# Create User
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/users/${USER_NAME}.plist" 'generateduid' -array "${USER_GUID}"
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/users/${USER_NAME}.plist" 'gid' -array "${USER_GID}"
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/users/${USER_NAME}.plist" 'home' -array "/Users/${USER_NAME}"
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/users/${USER_NAME}.plist" 'name' -array "${USER_NAME}"
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/users/${USER_NAME}.plist" 'passwd' -array "${USER_CRYPTED_PASSWORD}"
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/users/${USER_NAME}.plist" 'realname' -array "${USER_REALNAME}"
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/users/${USER_NAME}.plist" 'shell' -array '/bin/bash'
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/users/${USER_NAME}.plist" 'uid' -array "${USER_UID}"
+
+# Create Home Directory
+cp -rp '/System/Library/User Template/English.lproj' "${ROOTDIR}/Users/${USER_NAME}"
+
+# Set Groups Membership
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/groups/admin.plist" 'groupmembers' -array-add "${USER_GUID}"
+
+# Setup Sudo
+cat > "${ROOTDIR}/etc/sudoers.d/vagrant" <<- 'EOF'
+	vagrant ALL=(ALL) NOPASSWD: ALL
+EOF
+chmod 440 "${ROOTDIR}/etc/sudoers.d/vagrant"
+
+# Enable SSH
+defaults write "${ROOTDIR}/private/var/db/com.apple.xpc.launchd/disabled.plist" 'com.openssh.sshd' -bool 'false'
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/groups/com.apple.access_ssh-disabled.plist" 'comment' -array 'Disabled Users Service ACL'
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/groups/com.apple.access_ssh-disabled.plist" 'generateduid' -array 'ABCDEFAB-CDEF-ABCD-EFAB-CDEF0000018C'
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/groups/com.apple.access_ssh-disabled.plist" 'gid' -array '396'
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/groups/com.apple.access_ssh-disabled.plist" 'name' -array 'com.apple.access_disabled'
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/groups/com.apple.access_ssh-disabled.plist" 'nestedgroups' -array ''
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/groups/com.apple.access_ssh-disabled.plist" 'passwd' -array '*'
+defaults write "${ROOTDIR}/private/var/db/dslocal/nodes/Default/groups/com.apple.access_ssh-disabled.plist" 'realname' -array 'Disabled Users Service ACL'
+rm -f "${ROOTDIR}/private/var/db/dslocal/nodes/Default/groups/com.apple.access_ssh.plist"
+
+# Disable Auto Update
+defaults write "${ROOTDIR}/Library/Preferences/com.apple.commerce.plist" 'AutoUpdate' -integer '0'
+defaults write "${ROOTDIR}/Library/Preferences/com.apple.SoftwareUpdate.plist" 'AutomaticCheckEnabled' -bool 'false'
+
+# Disable Crash Reporter
+mkdir -p "${ROOTDIR}/Library/Application Support/CrashReporter"
+defaults write "${ROOTDIR}/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist" 'AutoSubmit' -bool 'false'
+defaults write "${ROOTDIR}/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist" 'AutoSubmitVersion' -integer '4'
+defaults write "${ROOTDIR}/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist" 'ThirdPartyDataSubmit' -bool 'false'
+defaults write "${ROOTDIR}/Library/Application Support/CrashReporter/DiagnosticMessagesHistory.plist" 'ThirdPartyDataSubmitVersion' -integer '4'
+
+# Disable Setup Assistants
+mkdir -p "${ROOTDIR}/Users/vagrant/Library/Preferences"
+defaults write "${ROOTDIR}/Library/Preferences/com.apple.keyboardtype.plist" 'keyboardtype' -dict '16-33006-13' '40'
+defaults write "${ROOTDIR}/Users/${USER_NAME}/Library/Preferences/com.apple.SetupAssistant.plist" 'DidSeeCloudSetup' -bool 'true'
+defaults write "${ROOTDIR}/Users/${USER_NAME}/Library/Preferences/com.apple.SetupAssistant.plist" 'DidSeeSiriSetup' -bool 'true'
+defaults write "${ROOTDIR}/Users/${USER_NAME}/Library/Preferences/com.apple.SetupAssistant.plist" 'LastSeenCloudProductVersion' -string "${MACOS_VERSION}"
+touch "${ROOTDIR}/private/var/db/.AppleDiagnosticsSetupDone"
+touch "${ROOTDIR}/private/var/db/.AppleSetupDone"
+
+# Fix Permissions
+chown -R "${USER_UID}:${USER_GID}" "${ROOTDIR}/Users/vagrant"

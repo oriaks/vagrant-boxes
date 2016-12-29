@@ -28,9 +28,8 @@ rm -rf /tmp/*
 rm -f /var/lib/dhcp/dhclient.*.leases
 rm -f /var/lib/NetworkManager/dhclient-*.lease
 
-# Truncate instead of delete, LP: #707311
 if [ -f /etc/popularity-contest.conf ]; then
-  truncate --size=0 -c /etc/popularity-contest.conf
+  :>/etc/popularity-contest.conf
 fi
 
 exit 0

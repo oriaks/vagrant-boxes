@@ -1,0 +1,90 @@
+{
+  "variables": {
+    "iso_checksum": "4129bacc303c73dba32aa6f590d12f2d",
+    "iso_checksum_type": "none",
+    "iso_url": "images/macos-10.12-amd64.iso",
+    "ssh_password": "vagrant",
+    "ssh_username": "vagrant",
+    "vm_name": "macos-10.12-amd64"
+  },
+  "builders": [
+    {
+      "type": "qemu",
+      "accelerator": "kvm",
+      "communicator": "ssh",
+      "disk_size": "32768",
+      "headless": false,
+      "http_directory": "preseed",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "qemuargs": [
+        [ "-smp", "2" ],
+        [ "-m", "2048M" ]
+      ],
+      "shutdown_command": "sudo /sbin/halt -p",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_port": "22",
+      "ssh_pty" : "true",
+      "ssh_wait_timeout": "24h",
+      "vm_name": "{{user `vm_name`}}"
+    },
+    {
+      "type": "virtualbox-iso",
+      "communicator": "ssh",
+      "disk_size": "32768",
+      "guest_additions_mode": "disable",
+      "guest_os_type": "MacOS1011_64",
+      "hard_drive_interface": "sata",
+      "headless": false,
+      "http_directory": "preseed",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_interface": "sata",
+      "iso_url": "{{user `iso_url`}}",
+      "shutdown_command": "sudo /sbin/halt",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_port": "22",
+      "ssh_pty" : "true",
+      "ssh_wait_timeout": "24h",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--cpus", "2"],
+        ["modifyvm", "{{.Name}}", "--firmware", "efi"],
+        ["modifyvm", "{{.Name}}", "--keyboard", "usb"],
+        ["modifyvm", "{{.Name}}", "--memory", "4096"],
+        ["modifyvm", "{{.Name}}", "--mouse", "usb"],
+        ["setextradata", "{{.Name}}", "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct", "Mac-F2238BAE"],
+        ["setextradata", "{{.Name}}", "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct", "iMac11,3"],
+        ["setextradata", "{{.Name}}", "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion", "1.0"],
+        ["setextradata", "{{.Name}}", "VBoxInternal/Devices/smc/0/Config/DeviceKey", "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"],
+        ["setextradata", "{{.Name}}", "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC", "1"]
+      ],
+      "vm_name": "{{user `vm_name`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo '{{user `ssh_password`}}' | sudo -S sh '{{.Path}}'",
+      "scripts": [
+        "scripts/upgrade.sh",
+        "scripts/bootloader.sh",
+        "scripts/ssh.sh",
+        "scripts/timezone.sh",
+        "scripts/users.sh",
+        "scripts/cleanup.sh",
+        "scripts/minimize.sh"
+      ],
+      "pause_before": "5s"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "vagrant-boxes/{{user `vm_name`}}-{{.Provider}}.box",
+      "vagrantfile_template": "vagrant/vagrantfile-macos.tpl"
+    }
+  ]
+}

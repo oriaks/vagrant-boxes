@@ -11,6 +11,17 @@ if which apt-get; then
   apt-get dist-upgrade -y
 fi
 
+# macOS specific
+if which softwareupdate; then
+  killall -9 softwareupdated
+  rm -rf /Library/Updates
+  defaults delete '/Library/Preferences/com.apple.SoftwareUpdate.plist' RecommendedUpdates
+
+  softwareupdate -a -i
+
+  TRAVIS=1 sudo -EHu vagrant ruby -e "$(curl -fLsS https://raw.githubusercontent.com/Homebrew/install/master/install)"
+fi
+
 # Red Hat specific
 if which yum; then
   yum upgrade -y

@@ -1,0 +1,3 @@
+#!/bin/sh
+
+diskutil eraseDisk jhfs+ 'Macintosh HD' GPTFormat disk0 || diskutil eraseDisk jhfs+ 'Macintosh HD' GPTFormat disk1
