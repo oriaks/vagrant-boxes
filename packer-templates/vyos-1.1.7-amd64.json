@@ -1,0 +1,126 @@
+{
+  "variables": {
+    "iso_checksum": "9a7f745a0b0db0d4f1d9eee2a437fb54",
+    "iso_checksum_type": "md5",
+    "iso_url": "http://packages.vyos.net/iso/release/1.1.7/vyos-1.1.7-amd64.iso",
+    "ssh_password": "vagrant",
+    "ssh_username": "vagrant",
+    "vm_name": "vyos-1.1.7-amd64"
+  },
+  "builders": [
+    {
+      "type": "qemu",
+      "accelerator": "kvm",
+      "boot_command": [
+        "<enter><wait10><wait10>",
+        "vyos<enter><wait>",
+        "vyos<enter><wait>",
+        "configure<enter><wait>",
+        "set interfaces ethernet eth0 address dhcp<enter><wait>",
+        "commit<enter><wait>",
+        "exit<enter><wait>",
+        "sudo curl -fLsS -A 'curl' -o '/opt/vyatta/etc/config.boot.default' 'http://{{.HTTPIP}}:{{.HTTPPort}}/{{.Name}}.boot'<enter><wait5>",
+        "install image<enter><wait>",
+        "Yes<enter><wait>",
+        "Auto<enter><wait>",
+        "vda<enter><wait>",
+        "Yes<enter><wait>",
+        "<enter><wait10><wait10>",
+        "vyos<enter><wait>",
+        "/opt/vyatta/etc/config.boot.default<enter><wait>",
+        "vagrant<enter><wait>",
+        "vagrant<enter><wait>",
+        "vda<enter><wait10>",
+        "reboot<enter><wait>",
+        "Yes<enter><wait>"
+      ],
+      "boot_wait": "5s",
+      "communicator": "ssh",
+      "disk_size": "8192",
+      "headless": false,
+      "http_directory": "preseed",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "qemuargs": [
+        [ "-smp", "2" ],
+        [ "-m", "1024M" ]
+      ],
+      "shutdown_command": "sudo /sbin/halt -p",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_port": "22",
+      "ssh_pty" : "true",
+      "ssh_wait_timeout": "2h",
+      "vm_name": "{{user `vm_name`}}"
+    },
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<enter><wait10><wait10>",
+        "vyos<enter><wait>",
+        "vyos<enter><wait>",
+        "configure<enter><wait>",
+        "set interfaces ethernet eth0 address dhcp<enter><wait>",
+        "commit<enter><wait>",
+        "exit<enter><wait>",
+        "sudo curl -fLsS -A 'curl' -o '/opt/vyatta/etc/config.boot.default' 'http://{{.HTTPIP}}:{{.HTTPPort}}/{{.Name}}.boot'<enter><wait5>",
+        "install image<enter><wait>",
+        "Yes<enter><wait>",
+        "Auto<enter><wait>",
+        "sda<enter><wait>",
+        "Yes<enter><wait>",
+        "<enter><wait10><wait10>",
+        "vyos<enter><wait>",
+        "/opt/vyatta/etc/config.boot.default<enter><wait>",
+        "vagrant<enter><wait>",
+        "vagrant<enter><wait>",
+        "sda<enter><wait10>",
+        "reboot<enter><wait>",
+        "Yes<enter><wait>"
+      ],
+      "boot_wait": "5s",
+      "communicator": "ssh",
+      "disk_size": "8192",
+      "guest_additions_mode": "disable",
+      "guest_os_type": "Debian_64",
+      "hard_drive_interface": "sata",
+      "headless": false,
+      "http_directory": "preseed",
+      "iso_checksum": "{{user `iso_checksum`}}",
+      "iso_checksum_type": "{{user `iso_checksum_type`}}",
+      "iso_url": "{{user `iso_url`}}",
+      "shutdown_command": "sudo /sbin/halt -p",
+      "ssh_password": "{{user `ssh_password`}}",
+      "ssh_username": "{{user `ssh_username`}}",
+      "ssh_port": "22",
+      "ssh_pty" : "true",
+      "ssh_wait_timeout": "2h",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--cpus", "2"],
+        ["modifyvm", "{{.Name}}", "--memory", "1024"]
+      ],
+      "vm_name": "{{user `vm_name`}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "sudo -S sh '{{.Path}}'",
+      "scripts": [
+        "scripts/upgrade.sh",
+        "scripts/vyos.sh",
+        "scripts/cleanup.sh",
+        "scripts/minimize.sh"
+      ],
+      "pause_before": "5s"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "vagrant-boxes/{{user `vm_name`}}-{{.Provider}}.box",
+      "vagrantfile_template": "vagrant/vagrantfile-vyos.tpl"
+    }
+  ]
+}
