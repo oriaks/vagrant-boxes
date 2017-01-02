@@ -2,7 +2,7 @@
 
 # Debian specific
 if which apt-get; then
-  apt-get purge -y anacron avahi-autoipd discover installation-report laptop-detect libio-socket-ip-perl libpcsclite1 pinentry-gtk2 task-laptop
+  apt-get purge -y avahi-autoipd discover installation-report laptop-detect libio-socket-ip-perl libpcsclite1 pinentry-gtk2 task-laptop
   apt-get autoremove -y --purge
   apt-get clean -y
   rm -rf /usr/sbin/policy-rc.d /var/lib/apt/lists/* /tmp/* /var/tmp/*
